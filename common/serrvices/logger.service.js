@@ -1,27 +1,45 @@
 const winston = require('winston');
 const { SeqTransport } = require('@datalust/winston-seq');
+const config = require('../config/env.config');
 
-const log = winston.createLogger({
-    level: 'info',
+const createLogger = (opts = {}) => {
+  const {
+    level = `verbose`,
+    awsInstanceId,
+    noAwsInstanceId = 'noAwsInstanceId'
+  } = opts;
+
+  return winston.createLogger({
+    level,
     format: winston.format.combine(  /* This is required to get errors to log with stack traces. See https://github.com/winstonjs/winston/issues/1498 */
+      winston.format((info) => {
+        info.instanceId = awsInstanceId || noAwsInstanceId;
+        return info;
+      })(),
+      winston.format.timestamp(),
       winston.format.errors({ stack: true }),
       winston.format.json(),
+      winston.format.printf(({timestamp, instanceId, level, message}) => {
+        return `${timestamp} (${instanceId}) - ${level}: ${message}`;
+      })
     ),
     defaultMeta: { /* application: 'your-app-name' */ },
     transports: [
       new winston.transports.Console({
           format: winston.format.simple(),
+          handleExceptions: true
       }),
       new SeqTransport({
-        serverUrl: "http://localhost:5341",
-        apiKey: "gxBp6iGlgVECwqO6R5Vk",
+        serverUrl: config.seqServerUrl,
+        apiKey: config.seqApiKey,
         onError: (e => { console.error(e) }),
         handleExceptions: true,
         handleRejections: true,
       })
     ]
   });
+}
 
 module.exports = {
-    log
+  createLogger
 };

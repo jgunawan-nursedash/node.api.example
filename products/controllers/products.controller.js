@@ -1,7 +1,8 @@
-const logger = require('../../common/serrvices/logger.service');
+const {createLogger} = require('../../common/serrvices/logger.service');
 
+const logger = createLogger();
 exports.list = (req, res) => {
-    logger.log.info('List all the product controller list');
+    logger.info('List all the product controller list');
     
     const products = [
         {

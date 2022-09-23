@@ -1,7 +1,7 @@
 const config = require('./common/config/env.config.js');
-
 const productsRouter = require('./products/routes.config');
-const logger = require('./common/serrvices/logger.service');
+const {createLogger} = require('./common/serrvices/logger.service');
+const axios = require('axios');
 
 const express = require('express');
 const app = express();
@@ -22,6 +22,15 @@ app.use(function (req, res, next) {
 app.use(express.json());
 productsRouter.routesConfig(app);
 
-app.listen(config.port, function () {
-    logger.log.info("app listening at port {portNumber}", {portNumber: config.port});
-});
+(async () => {
+    try {
+        const awsInstanceId = await axios.get(config.awsInstanceIdUrl);
+        const logger = createLogger(awsInstanceId);
+
+        app.listen(config.port, function () {
+            logger.info("app listening at port {portNumber}", {portNumber: config.port});
+        });
+    } catch (error) {
+      console.log(error.response.body);
+    }
+  })();
