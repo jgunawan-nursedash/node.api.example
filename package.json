@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "debug": "set DEBUG=true && node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,6 +15,8 @@
     "axios": "^0.27.2",
     "cls-hooked": "^4.2.2",
     "express": "^4.18.1",
+    "express-async-wrap": "^1.0.0",
+    "request-promise-native": "^1.0.9",
     "uuid": "^9.0.0",
     "winston": "^3.8.2"
   }

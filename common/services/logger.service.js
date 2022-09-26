@@ -6,7 +6,9 @@ const createLogger = (opts = {}) => {
   const {
     level = `verbose`,
     awsInstanceId,
-    noAwsInstanceId = 'noAwsInstanceId'
+    noAwsInstanceId = 'noAwsInstanceId',
+    getCorrelationId,
+    noCorrelationId = 'noCorrelationId'
   } = opts;
 
   return winston.createLogger({
@@ -14,13 +16,14 @@ const createLogger = (opts = {}) => {
     format: winston.format.combine(  /* This is required to get errors to log with stack traces. See https://github.com/winstonjs/winston/issues/1498 */
       winston.format((info) => {
         info.instanceId = awsInstanceId || noAwsInstanceId;
+        info.CorrelationId = getCorrelationId() || noCorrelationId;
         return info;
       })(),
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),
       winston.format.json(),
-      winston.format.printf(({timestamp, instanceId, level, message}) => {
-        return `${timestamp} (${instanceId}) - ${level}: ${message}`;
+      winston.format.printf(({timestamp, instanceId, CorrelationId, level, message}) => {
+        return `${timestamp} (${instanceId} ${CorrelationId}) - ${level}: ${message}`;
       })
     ),
     defaultMeta: { /* application: 'your-app-name' */ },

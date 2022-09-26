@@ -1,8 +1,15 @@
-const {createLogger} = require('../serrvices/logger.service');
+const correlator = require('../services/correlation-id.services');
 
-const logger = createLogger();
-exports.getCorrelationId = (req, res, next) => {
-    logger.info('Correlation ID');
-    return next();
-    // return res.status(400).send({error: ''});
-};
+const correlationIdMiddleware = (req, res, next) => {
+    correlator.bindEmitter(req);
+    correlator.bindEmitter(res);
+    correlator.bindEmitter(req.socket);
+
+    correlator.withId(() => {
+        const currentCorrelationId = correlator.getId();
+        res.set('CorrelationId', currentCorrelationId);
+        next();
+    }, req.get('CorrelationId'));
+}
+
+module.exports = {correlationIdMiddleware};
