@@ -5,7 +5,11 @@ const correlationId = require('./common/services/correlation-id.services');
 const {correlationIdMiddleware} = require('./common/middlewares/correlation-id.middleware');
 const axios = require('axios');
 
+const {createLoggerDd} = require('./common/services/logger-dd.service');
+const { createLoggerNr } = require('./common/services/logger-nr.service.js');
+
 const express = require('express');
+
 
 (async () => {
     try {
@@ -21,15 +25,32 @@ const express = require('express');
             console.log(error);
         }
         
+        // Seq Logger
         const logger = createLogger({
             awsInstanceId: instanceId,
             getCorrelationId: correlationId.getId
         });
 
-        weatherforecastRouter.routesConfig(app, logger);
+        // DataDog Logger
+        const loggerDd = createLoggerDd({
+            awsInstanceId: instanceId,
+            getCorrelationId: correlationId.getId
+        });
+
+        // New Relic Logger
+        const loggerNr = createLoggerNr({
+            awsInstanceId: instanceId,
+            getCorrelationId: correlationId.getId
+        });
+
+        weatherforecastRouter.routesConfig(app, loggerNr);
 
         app.listen(config.port, function () {
-            logger.info("app listening at port {portNumber}", {portNumber: config.port});
+            // New Relic log
+            loggerNr.log({
+                level: 'info',
+                message: `app listening at port ${config.port}`
+            });
         });
     } catch (error) {
       console.log(error);

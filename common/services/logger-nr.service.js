@@ -1,9 +1,15 @@
-// SEQ Logger service
+// New Relic Log Service
 const winston = require('winston');
-const { SeqTransport } = require('@datalust/winston-seq');
 const config = require('../config/env.config');
+const newrelicLogTransport = require('../transports/newrelic.transport');
 
-const createLogger = (opts = {}) => {
+// TODO: replace newrelicKey with your NewRelic license key
+const httpTransportOptions = {
+  licenseKey: "newrelicKey",
+  apiUrl: "https://log-api.newrelic.com"
+};
+
+const createLoggerNr = (opts = {}) => {
   const {
     level = `verbose`,
     awsInstanceId,
@@ -29,21 +35,11 @@ const createLogger = (opts = {}) => {
     ),
     defaultMeta: { /* application: 'your-app-name' */ },
     transports: [
-      new winston.transports.Console({
-          format: winston.format.simple(),
-          handleExceptions: true
-      }),
-      new SeqTransport({
-        serverUrl: config.seqServerUrl,
-        apiKey: config.seqApiKey,
-        onError: (e => { console.log(e) }),
-        handleExceptions: true,
-        handleRejections: true,
-      })
+      new newrelicLogTransport(httpTransportOptions)
     ]
   });
 }
 
 module.exports = {
-  createLogger
+    createLoggerNr
 };

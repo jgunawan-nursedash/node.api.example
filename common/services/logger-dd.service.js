@@ -1,9 +1,15 @@
-// SEQ Logger service
+// DataDog Log Service
 const winston = require('winston');
-const { SeqTransport } = require('@datalust/winston-seq');
 const config = require('../config/env.config');
 
-const createLogger = (opts = {}) => {
+// TODO: replace datadogKey with your datadog license key
+const httpTransportOptions = {
+    host: 'http-intake.logs.datadoghq.com',
+    path: '/api/v2/logs?dd-api-key=datadogKey&ddsource=nodejs&service=node-dd-web-api',
+    ssl: true
+  };
+
+const createLoggerDd = (opts = {}) => {
   const {
     level = `verbose`,
     awsInstanceId,
@@ -33,17 +39,11 @@ const createLogger = (opts = {}) => {
           format: winston.format.simple(),
           handleExceptions: true
       }),
-      new SeqTransport({
-        serverUrl: config.seqServerUrl,
-        apiKey: config.seqApiKey,
-        onError: (e => { console.log(e) }),
-        handleExceptions: true,
-        handleRejections: true,
-      })
+      new winston.transports.Http(httpTransportOptions)
     ]
   });
 }
 
 module.exports = {
-  createLogger
+    createLoggerDd
 };
