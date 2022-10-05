@@ -17,7 +17,7 @@ const express = require('express');
         app.use(correlationIdMiddleware);
         app.use(express.json());
 
-        const instanceId = null;
+        let instanceId = null;
         try {
             const res = await axios.get(config.awsInstanceIdUrl);
             instanceId = res.data;
